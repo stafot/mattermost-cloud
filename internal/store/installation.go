@@ -144,7 +144,25 @@ func (sqlStore *SQLStore) GetInstallations(filter *model.InstallationFilter) ([]
 		return nil, errors.Wrap(err, "failed to query for installations")
 	}
 
-	return rawInstallations.toInstallations()
+	installations, err := rawInstallations.toInstallations()
+	if err != nil {
+		return nil, err
+	}
+
+	for _, installation := range installations {
+		if !installation.IsInGroup() {
+			continue
+		}
+
+		installation.GroupOverrides = make(map[string]string)
+		group, err := sqlStore.GetGroup(*installation.GroupID)
+		if err != nil {
+			return nil, err
+		}
+		installation.MergeWithGroup(group, true)
+	}
+
+	return installations, nil
 }
 
 // CreateInstallation records the given installation to the database, assigning it a unique ID.
@@ -194,6 +212,36 @@ func (sqlStore *SQLStore) UpdateInstallation(installation *model.Installation) e
 	envJSON, err := json.Marshal(installation.MattermostEnv)
 	if err != nil {
 		return errors.Wrap(err, "unable to marshal MattermostEnv")
+	}
+
+	if installation.GroupID != nil {
+		group, err := sqlStore.GetGroup(*installation.GroupID)
+		if err != nil {
+			return err
+		}
+		_, err = sqlStore.execBuilder(sqlStore.db, sq.
+			Update("Installation").
+			SetMap(map[string]interface{}{
+				"OwnerID":          installation.OwnerID,
+				"Version":          installation.Version,
+				"GroupSequence":    group.Sequence,
+				"DNS":              installation.DNS,
+				"Database":         installation.Database,
+				"Filestore":        installation.Filestore,
+				"Size":             installation.Size,
+				"Affinity":         installation.Affinity,
+				"GroupID":          installation.GroupID,
+				"License":          installation.License,
+				"MattermostEnvRaw": []byte(envJSON),
+				"State":            installation.State,
+			}).
+			Where("ID = ?", installation.ID),
+		)
+		if err != nil {
+			return errors.Wrap(err, "failed to update installation")
+		}
+
+		return nil
 	}
 
 	_, err = sqlStore.execBuilder(sqlStore.db, sq.
