@@ -49,7 +49,7 @@ func (s *mockGroupStore) UpdateInstallation(installation *model.Installation) er
 	return nil
 }
 
-func (s *mockGroupStore) UpdateInstallationState(id, state string) error {
+func (s *mockGroupStore) UpdateInstallationState(installation *model.Installation) error {
 	s.UpdateInstallationCalls++
 	return nil
 }

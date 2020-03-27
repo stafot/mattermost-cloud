@@ -257,7 +257,7 @@ func (sqlStore *SQLStore) UpdateGroup(group *model.Group) error {
 	if err != nil {
 		return err
 	}
-	if originalGroup.Version != group.Version || reflect.DeepEqual(originalGroup.MattermostEnv, group.MattermostEnv) {
+	if originalGroup.Version != group.Version || !reflect.DeepEqual(originalGroup.MattermostEnv, group.MattermostEnv) {
 		// Update the sequence number, but don't trust the group sequence number
 		// that was passed in.
 		group.Sequence = originalGroup.Sequence + 1

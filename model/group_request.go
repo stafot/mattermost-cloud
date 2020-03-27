@@ -14,7 +14,34 @@ type CreateGroupRequest struct {
 	Name          string
 	Description   string
 	Version       string
+	MaxRolling    int64
 	MattermostEnv EnvVarMap
+}
+
+// SetDefaults sets the default values for a group create request.
+func (request *CreateGroupRequest) SetDefaults() {
+	if request.MaxRolling == 0 {
+		request.MaxRolling = 1
+	}
+}
+
+// Validate validates the values of a group create request.
+func (request *CreateGroupRequest) Validate() error {
+	if request.Name == "" {
+		return errors.New("must specify name")
+	}
+	if request.Version == "" {
+		return errors.New("must specify version")
+	}
+	if request.MaxRolling < 1 {
+		return errors.New("max rolling must be 1 or greater")
+	}
+	err := request.MattermostEnv.Validate()
+	if err != nil {
+		return errors.Wrapf(err, "bad environment variable map in create group request")
+	}
+
+	return nil
 }
 
 // NewCreateGroupRequestFromReader will create a CreateGroupRequest from an io.Reader with JSON data.
@@ -25,6 +52,7 @@ func NewCreateGroupRequestFromReader(reader io.Reader) (*CreateGroupRequest, err
 		return nil, errors.Wrap(err, "failed to decode create group request")
 	}
 
+	createGroupRequest.SetDefaults()
 	err = createGroupRequest.Validate()
 	if err != nil {
 		return nil, errors.Wrap(err, "invalid group create request")
@@ -33,25 +61,10 @@ func NewCreateGroupRequestFromReader(reader io.Reader) (*CreateGroupRequest, err
 	return &createGroupRequest, nil
 }
 
-// Validate validates the values of a group create request
-func (request *CreateGroupRequest) Validate() error {
-	if request.Name == "" {
-		return errors.New("must specify name")
-	}
-	if request.Version == "" {
-		return errors.New("must specify version")
-	}
-	err := request.MattermostEnv.Validate()
-	if err != nil {
-		return errors.Wrapf(err, "bad environment variable map in create group request")
-	}
-
-	return nil
-}
-
 // PatchGroupRequest specifies the parameters for an updated group.
 type PatchGroupRequest struct {
 	ID            string
+	MaxRolling    *int64
 	Name          *string
 	Description   *string
 	Version       *string
@@ -90,7 +103,10 @@ func (p *PatchGroupRequest) Apply(group *Group) bool {
 		applied = true
 		group.Version = *p.Version
 	}
-
+	if p.MaxRolling != nil && *p.MaxRolling != group.MaxRolling {
+		applied = true
+		group.MaxRolling = *p.MaxRolling
+	}
 	if p.MattermostEnv != nil {
 		applied = true
 		group.MattermostEnv = p.MattermostEnv
@@ -101,6 +117,9 @@ func (p *PatchGroupRequest) Apply(group *Group) bool {
 
 // Validate validates the values of a group patch request
 func (p *PatchGroupRequest) Validate() error {
+	if p.MaxRolling != nil && *p.MaxRolling < 1 {
+		return errors.New("max rolling must be 1 or greater")
+	}
 	err := p.MattermostEnv.Validate()
 	if err != nil {
 		return errors.Wrapf(err, "bad environment variable map in patch group request")
