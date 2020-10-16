@@ -322,6 +322,10 @@ func (a *mockAWS) GenerateBifrostUtilitySecret(clusterID string, logger log.Fiel
 	return nil, nil
 }
 
+func (a *mockAWS) GetCIDRByVPCTag(vpcTagName string, logger log.FieldLogger) (string, error) {
+	return "", nil
+}
+
 func TestInstallationSupervisorDo(t *testing.T) {
 	t.Run("no installations pending work", func(t *testing.T) {
 		logger := testlib.MakeLogger(t)

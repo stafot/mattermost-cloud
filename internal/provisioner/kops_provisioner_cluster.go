@@ -36,8 +36,10 @@ type KopsProvisioner struct {
 	privateSubnetIds        string
 	publicSubnetIds         string
 	allowCIDRRangeList      []string
+	vpnCIDRList             []string
 	owner                   string
 	useExistingAWSResources bool
+	environment             string
 	resourceUtil            *utils.ResourceUtil
 	logger                  log.FieldLogger
 	store                   model.InstallationDatabaseStoreInterface
@@ -45,8 +47,8 @@ type KopsProvisioner struct {
 
 // NewKopsProvisioner creates a new KopsProvisioner.
 // TODO(gsagula): Consider replacing all these paramaters with a struct for readability.
-func NewKopsProvisioner(s3StateStore, owner string, useExistingAWSResources bool, allowCIDRRangeList []string,
-	resourceUtil *utils.ResourceUtil, logger log.FieldLogger, store model.InstallationDatabaseStoreInterface) *KopsProvisioner {
+func NewKopsProvisioner(s3StateStore, owner string, useExistingAWSResources bool, allowCIDRRangeList []string, vpnCIDRList []string,
+	resourceUtil *utils.ResourceUtil, env string, logger log.FieldLogger, store model.InstallationDatabaseStoreInterface) *KopsProvisioner {
 
 	logger = logger.WithField("provisioner", "kops")
 
@@ -54,8 +56,10 @@ func NewKopsProvisioner(s3StateStore, owner string, useExistingAWSResources bool
 		s3StateStore:            s3StateStore,
 		useExistingAWSResources: useExistingAWSResources,
 		allowCIDRRangeList:      allowCIDRRangeList,
+		vpnCIDRList:             vpnCIDRList,
 		logger:                  logger,
 		resourceUtil:            resourceUtil,
+		environment:             env,
 		owner:                   owner,
 		store:                   store,
 	}
@@ -86,6 +90,14 @@ func (provisioner *KopsProvisioner) CreateCluster(cluster *model.Cluster, awsCli
 		return errors.Errorf("invalid AWS AMI Image %s", cluster.ProvisionerMetadataKops.AMI)
 	}
 
+	cncVPCName := fmt.Sprintf("mattermost-cloud-%s-command-control", provisioner.environment)
+	cncVPCCIDR, err := awsClient.GetCIDRByVPCTag(cncVPCName, logger)
+	if err != nil {
+		return errors.Wrapf(err, "failed to get the CIDR for the VPC Name %s", cncVPCName)
+	}
+	allowSSHCIDRS := []string{cncVPCCIDR}
+	allowSSHCIDRS = append(allowSSHCIDRS, provisioner.vpnCIDRList...)
+
 	kopsMetadata := cluster.ProvisionerMetadataKops
 
 	logger.WithField("name", kopsMetadata.Name).Info("Creating cluster")
@@ -112,6 +124,7 @@ func (provisioner *KopsProvisioner) CreateCluster(cluster *model.Cluster, awsCli
 		clusterResources.PublicSubnetsIDs,
 		clusterResources.MasterSecurityGroupIDs,
 		clusterResources.WorkerSecurityGroupIDs,
+		allowSSHCIDRS,
 	)
 	if err != nil {
 		releaseErr := awsClient.ReleaseVpc(cluster.ID, logger)

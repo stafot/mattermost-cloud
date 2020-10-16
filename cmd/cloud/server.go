@@ -49,6 +49,8 @@ func init() {
 	serverCmd.PersistentFlags().Bool("cluster-installation-supervisor", true, "Whether this server will run a cluster installation supervisor or not.")
 	serverCmd.PersistentFlags().String("state-store", "dev.cloud.mattermost.com", "The S3 bucket used to store cluster state.")
 	serverCmd.PersistentFlags().StringSlice("allow-list-cidr-range", []string{"0.0.0.0/0"}, "The list of CIDRs to allow communication with the private ingress.")
+	serverCmd.PersistentFlags().StringSlice("vpn-list-cidr", []string{"0.0.0.0/0"}, "The list of VPN CIDRs to allow communication with the clusters.")
+	serverCmd.PersistentFlags().String("env", "dev", "Which envirionment the provisioner is running.")
 
 	serverCmd.PersistentFlags().Int("poll", 30, "The interval in seconds to poll for background work.")
 	serverCmd.PersistentFlags().Int("cluster-resource-threshold", 80, "The percent threshold where new installations won't be scheduled on a multi-tenant cluster.")
@@ -70,6 +72,8 @@ var serverCmd = &cobra.Command{
 
 		devMode, _ := command.Flags().GetBool("dev")
 
+		env, _ := command.Flags().GetString("env")
+
 		debug, _ := command.Flags().GetBool("debug")
 		debugMode := debug || (devMode && flagIsUnset(command, "debug"))
 		if debugMode {
@@ -87,6 +91,11 @@ var serverCmd = &cobra.Command{
 		allowListCIDRRange, _ := command.Flags().GetStringSlice("allow-list-cidr-range")
 		if len(allowListCIDRRange) == 0 {
 			return errors.New("allow-list-cidr-range must have at least one value")
+		}
+
+		vpnListCIDR, _ := command.Flags().GetStringSlice("vpn-list-cidr")
+		if len(vpnListCIDR) == 0 {
+			return errors.New("vpn-list-cidr must have at least one value")
 		}
 
 		logger := logger.WithField("instance", instanceID)
@@ -147,6 +156,7 @@ var serverCmd = &cobra.Command{
 		}
 
 		logger.WithFields(logrus.Fields{
+			"env":                                    env,
 			"build-hash":                             model.BuildHash,
 			"cluster-supervisor":                     clusterSupervisor,
 			"group-supervisor":                       groupSupervisor,
@@ -199,7 +209,9 @@ var serverCmd = &cobra.Command{
 			owner,
 			useExistingResources,
 			allowListCIDRRange,
+			vpnListCIDR,
 			resourceUtil,
+			env,
 			logger,
 			sqlStore,
 		)
