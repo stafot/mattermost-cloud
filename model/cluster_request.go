@@ -71,6 +71,9 @@ func (request *CreateClusterRequest) SetDefaults() {
 	if _, ok := request.DesiredUtilityVersions[NginxCanonicalName]; !ok {
 		request.DesiredUtilityVersions[NginxCanonicalName] = NginxDefaultVersion
 	}
+	if _, ok := request.DesiredUtilityVersions[NginxInternalCanonicalName]; !ok {
+		request.DesiredUtilityVersions[NginxInternalCanonicalName] = NginxDefaultVersion
+	}
 	if _, ok := request.DesiredUtilityVersions[FluentbitCanonicalName]; !ok {
 		request.DesiredUtilityVersions[FluentbitCanonicalName] = FluentbitDefaultVersion
 	}

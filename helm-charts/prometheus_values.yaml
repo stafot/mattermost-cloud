@@ -8,7 +8,7 @@ server:
   ingress:
     enabled: true
     annotations:
-      kubernetes.io/ingress.class: nginx-controller
+      kubernetes.io/ingress.class: nginx-internal
 
 alertmanager:
   enabled: false
