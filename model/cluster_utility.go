@@ -27,6 +27,8 @@ const (
 	TeleportCanonicalName = "teleport"
 	// PgbouncerCanonicalName is the canonical string representation of pgbouncer
 	PgbouncerCanonicalName = "pgbouncer"
+	// KubecostCanonicalName is the canonical string representation of kubecost
+	KubecostCanonicalName = "kubecost"
 	// GitlabOAuthTokenKey is the name of the Environment Variable which
 	// may contain an OAuth token for accessing GitLab repositories over
 	// HTTPS, used for fetching values files
@@ -48,6 +50,8 @@ var (
 	TeleportDefaultVersion = &HelmUtilityVersion{Chart: "0.3.0", ValuesPath: "helm-charts/teleport_values.yaml"}
 	// PgbouncerDefaultVersion defines the default version for the Helm chart
 	PgbouncerDefaultVersion = &HelmUtilityVersion{Chart: "1.1.0", ValuesPath: "helm-charts/pgbouncer_values.yaml"}
+	// KubecostDefaultVersion defines the default version for the Helm chart
+	KubecostDefaultVersion = &HelmUtilityVersion{Chart: "1.83.0", ValuesPath: "helm-charts/kubecost_values.yaml"}
 )
 
 // UnmarshalJSON is a custom JSON unmarshaler that can handle both the
@@ -64,6 +68,7 @@ func (h *UtilityGroupVersions) UnmarshalJSON(bytes []byte) error {
 		Fluentbit          *HelmUtilityVersion
 		Teleport           *HelmUtilityVersion
 		Pgbouncer          *HelmUtilityVersion
+		Kubecost		   *HelmUtilityVersion
 	}
 	type oldUtilityGroupVersions struct {
 		PrometheusOperator string
@@ -73,6 +78,7 @@ func (h *UtilityGroupVersions) UnmarshalJSON(bytes []byte) error {
 		Fluentbit          string
 		Teleport           string
 		Pgbouncer          string
+		Kubecost		   string
 	}
 
 	var utilGrpVers *utilityGroupVersions = &utilityGroupVersions{}
@@ -91,6 +97,7 @@ func (h *UtilityGroupVersions) UnmarshalJSON(bytes []byte) error {
 		h.Fluentbit = &HelmUtilityVersion{Chart: oldUtilGrpVers.Fluentbit}
 		h.Teleport = &HelmUtilityVersion{Chart: oldUtilGrpVers.Teleport}
 		h.Pgbouncer = &HelmUtilityVersion{Chart: oldUtilGrpVers.Pgbouncer}
+		h.Kubecost = &HelmUtilityVersion{Chart: oldUtilGrpVers.Kubecost}
 		return nil
 	}
 
@@ -101,6 +108,7 @@ func (h *UtilityGroupVersions) UnmarshalJSON(bytes []byte) error {
 	h.Fluentbit = utilGrpVers.Fluentbit
 	h.Teleport = utilGrpVers.Teleport
 	h.Pgbouncer = utilGrpVers.Pgbouncer
+	h.Kubecost = utilGrpVers.Kubecost
 	return nil
 }
 
@@ -114,6 +122,7 @@ type UtilityGroupVersions struct {
 	Fluentbit          *HelmUtilityVersion
 	Teleport           *HelmUtilityVersion
 	Pgbouncer          *HelmUtilityVersion
+	Kubecost	 	   *HelmUtilityVersion
 }
 
 // AsMap returns the UtilityGroupVersion represented as a map with the
@@ -128,6 +137,7 @@ func (h *UtilityGroupVersions) AsMap() map[string]*HelmUtilityVersion {
 		FluentbitCanonicalName:          h.Fluentbit,
 		TeleportCanonicalName:           h.Teleport,
 		PgbouncerCanonicalName:          h.Pgbouncer,
+		KubecostCanonicalName: 			 h.Kubecost,
 	}
 }
 
@@ -248,6 +258,8 @@ func getUtilityVersion(versions UtilityGroupVersions, utility string) *HelmUtili
 		return versions.Teleport
 	case PgbouncerCanonicalName:
 		return versions.Pgbouncer
+	case KubecostCanonicalName:
+		return versions.Kubecost
 	}
 
 	return nil
@@ -273,6 +285,8 @@ func setUtilityVersion(versions *UtilityGroupVersions, utility string, desiredVe
 		versions.Teleport = desiredVersion
 	case PgbouncerCanonicalName:
 		versions.Pgbouncer = desiredVersion
+	case KubecostCanonicalName:
+		versions.Kubecost = desiredVersion
 	}
 }
 

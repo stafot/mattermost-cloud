@@ -39,6 +39,7 @@ func init() {
 	clusterCreateCmd.Flags().String("nginx-internal-version", model.NginxInternalDefaultVersion.Version(), "The version of Nginx to provision. Use 'stable' to provision the latest stable version published upstream.")
 	clusterCreateCmd.Flags().String("teleport-version", model.TeleportDefaultVersion.Version(), "The version of Teleport to provision. Use 'stable' to provision the latest stable version published upstream.")
 	clusterCreateCmd.Flags().String("pgbouncer-version", model.PgbouncerDefaultVersion.Version(), "The version of Pgbouncer to provision. Use 'stable' to provision the latest stable version published upstream.")
+	clusterCreateCmd.Flags().String("kubecost-version", model.KubecostDefaultVersion.Version(), "The version of Kubecost to provision. Use 'stable' to provision the latest stable version published upstream.")
 	clusterCreateCmd.Flags().String("prometheus-operator-values", model.PrometheusOperatorDefaultVersion.Values(), "The branch name of the desired chart value file's version for Prometheus Operator")
 	clusterCreateCmd.Flags().String("thanos-values", model.ThanosDefaultVersion.Values(), "The branch name of the desired chart value file's version for Thanos")
 	clusterCreateCmd.Flags().String("fluentbit-values", model.FluentbitDefaultVersion.Values(), "The branch name of the desired chart value file's version for Fluent-Bit")
@@ -46,6 +47,7 @@ func init() {
 	clusterCreateCmd.Flags().String("nginx-internal-values", model.NginxInternalDefaultVersion.Values(), "The branch name of the desired chart value file's version for NGINX Internal")
 	clusterCreateCmd.Flags().String("teleport-values", model.TeleportDefaultVersion.Values(), "The branch name of the desired chart value file's version for Teleport")
 	clusterCreateCmd.Flags().String("pgbouncer-values", model.PgbouncerDefaultVersion.Values(), "The branch name of the desired chart value file's version for Pgbouncer")
+	clusterCreateCmd.Flags().String("kubecost-values", model.KubecostDefaultVersion.Values(), "The branch name of the desired chart value file's version for Kubecost")
 	clusterCreateCmd.Flags().String("networking", "amazon-vpc-routed-eni", "Networking mode to use, for example: weave, calico, canal, amazon-vpc-routed-eni")
 	clusterCreateCmd.Flags().String("vpc", "", "Set to use a shared VPC")
 
@@ -59,6 +61,8 @@ func init() {
 	clusterProvisionCmd.Flags().String("nginx-internal-version", "", "The version of the internal NGINX Helm chart")
 	clusterProvisionCmd.Flags().String("teleport-version", "", "The version of the Teleport Helm chart")
 	clusterProvisionCmd.Flags().String("pgbouncer-version", "", "The version of the Pgbouncer Helm chart")
+	clusterProvisionCmd.Flags().String("kubecost-version", "", "The version of the Kubecost Helm chart")
+
 
 	clusterProvisionCmd.Flags().String("prometheus-operator-values", "", "The branch name of the desired chart value file's version for Prometheus Operator")
 	clusterProvisionCmd.Flags().String("thanos-values", "", "The branch name of the desired chart value file's version for Thanos")
@@ -67,6 +71,7 @@ func init() {
 	clusterProvisionCmd.Flags().String("nginx-internal-values", "", "The branch name of the desired chart value file's version for NGINX Internal")
 	clusterProvisionCmd.Flags().String("teleport-values", "", "The branch name of the desired chart value file's version for Teleport")
 	clusterProvisionCmd.Flags().String("pgbouncer-values", "", "The branch name of the desired chart value file's version for Pgbouncer")
+	clusterProvisionCmd.Flags().String("kubecost-values", "", "The branch name of the desired chart value file's version for Kubecost")
 
 	clusterProvisionCmd.MarkFlagRequired("cluster")
 
@@ -565,6 +570,8 @@ func processUtilityFlags(command *cobra.Command) map[string]*model.HelmUtilityVe
 	nginxInternalVersion, _ := command.Flags().GetString("nginx-internal-version")
 	teleportVersion, _ := command.Flags().GetString("teleport-version")
 	pgbouncerVersion, _ := command.Flags().GetString("pgbouncer-version")
+	kubecostVersion, _ := command.Flags().GetString("kubecost-version")
+
 
 	prometheusOperatorValues, _ := command.Flags().GetString("prometheus-operator-values")
 	thanosValues, _ := command.Flags().GetString("thanos-values")
@@ -573,6 +580,8 @@ func processUtilityFlags(command *cobra.Command) map[string]*model.HelmUtilityVe
 	nginxInternalValues, _ := command.Flags().GetString("nginx-internal-values")
 	teleportValues, _ := command.Flags().GetString("teleport-values")
 	pgbouncerValues, _ := command.Flags().GetString("pgbouncer-values")
+	kubecostValues, _ := command.Flags().GetString("kubecost-values")
+
 
 	utilityVersions := make(map[string]*model.HelmUtilityVersion)
 
@@ -602,6 +611,10 @@ func processUtilityFlags(command *cobra.Command) map[string]*model.HelmUtilityVe
 
 	if pgbouncerVersion != "" && pgbouncerValues != "" {
 		utilityVersions[model.PgbouncerCanonicalName] = &model.HelmUtilityVersion{Chart: pgbouncerVersion, ValuesPath: pgbouncerValues}
+	}
+
+	if kubecostVersion != "" && kubecostValues != "" {
+		utilityVersions[model.KubecostCanonicalName] = &model.HelmUtilityVersion{Chart: kubecostVersion, ValuesPath: kubecostValues}
 	}
 
 	return utilityVersions

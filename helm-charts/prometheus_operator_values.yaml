@@ -64,7 +64,49 @@ defaultRules:
 
 ## Provide custom recording or alerting rules to be deployed into the cluster.
 ##
-additionalPrometheusRules: []
+additionalPrometheusRules:
+  - name: kubecost-rules
+    groups:
+      - name: CPU
+        rules:
+          - expr: sum(rate(container_cpu_usage_seconds_total{container_name!=""}[5m]))
+            record: cluster:cpu_usage:rate5m
+          - expr: rate(container_cpu_usage_seconds_total{container_name!=""}[5m])
+            record: cluster:cpu_usage_nosum:rate5m
+          - expr: avg(irate(container_cpu_usage_seconds_total{container_name!="POD", container_name!=""}[5m])) by (container_name,pod_name,namespace)
+            record: kubecost_container_cpu_usage_irate
+          - expr: sum(container_memory_working_set_bytes{container_name!="POD",container_name!=""}) by (container_name,pod_name,namespace)
+            record: kubecost_container_memory_working_set_bytes
+          - expr: sum(container_memory_working_set_bytes{container_name!="POD",container_name!=""})
+            record: kubecost_cluster_memory_working_set_bytes
+      - name: Savings
+        rules:
+          - expr: sum(avg(kube_pod_owner{owner_kind!="DaemonSet"}) by (pod) * sum(container_cpu_allocation) by (pod))
+            record: kubecost_savings_cpu_allocation
+            labels:
+              daemonset: "false"
+          - expr: sum(avg(kube_pod_owner{owner_kind="DaemonSet"}) by (pod) * sum(container_cpu_allocation) by (pod)) / sum(kube_node_info)
+            record: kubecost_savings_cpu_allocation
+            labels:
+              daemonset: "true"
+          - expr: sum(avg(kube_pod_owner{owner_kind!="DaemonSet"}) by (pod) * sum(container_memory_allocation_bytes) by (pod))
+            record: kubecost_savings_memory_allocation_bytes
+            labels:
+              daemonset: "false"
+          - expr: sum(avg(kube_pod_owner{owner_kind="DaemonSet"}) by (pod) * sum(container_memory_allocation_bytes) by (pod)) / sum(kube_node_info)
+            record: kubecost_savings_memory_allocation_bytes
+            labels:
+              daemonset: "true"
+          - expr: label_replace(sum(kube_pod_status_phase{phase="Running",namespace!="kube-system"} > 0) by (pod, namespace), "pod_name", "$1", "pod", "(.+)")
+            record: kubecost_savings_running_pods
+          - expr: sum(rate(container_cpu_usage_seconds_total{container_name!="",container_name!="POD",instance!=""}[5m])) by (namespace, pod_name, container_name, instance)
+            record: kubecost_savings_container_cpu_usage_seconds
+          - expr: sum(container_memory_working_set_bytes{container_name!="",container_name!="POD",instance!=""}) by (namespace, pod_name, container_name, instance)
+            record: kubecost_savings_container_memory_usage_bytes
+          - expr: avg(sum(kube_pod_container_resource_requests{resource="cpu", unit="core", namespace!="kube-system"}) by (pod, namespace, instance)) by (pod, namespace)
+            record: kubecost_savings_pod_requests_cpu_cores
+          - expr: avg(sum(kube_pod_container_resource_requests{resource="memory", unit="byte", namespace!="kube-system"}) by (pod, namespace, instance)) by (pod, namespace)
+            record: kubecost_savings_pod_requests_memory_bytes
 #  - name: my-rule-file
 #    groups:
 #      - name: my_group
@@ -1884,10 +1926,26 @@ prometheus:
     ## to break upgrades of Prometheus. It is advised to review Prometheus release notes to ensure that no incompatible
     ## scrape configs are going to break Prometheus after the upgrade.
     ##
-    ## The scrape configuraiton example below will find master nodes, provided they have the name .*mst.*, relabel the
+    ## The scrape configuration example below will find master nodes, provided they have the name .*mst.*, relabel the
     ## port to 2379 and allow etcd scraping provided it is running on all Kubernetes master nodes
     ##
-    additionalScrapeConfigs: []
+    additionalScrapeConfigs:
+      - job_name: cadvisor-kubecost-relabels
+        metric_relabel_configs:
+        - source_labels: [container]
+          target_label: container_name
+          regex: (.+)
+          action: replace
+        - source_labels: [pod]
+          target_label: pod_name
+          regex: (.+)
+          action: replace
+        - source_labels: [node]
+          separator: ;
+          regex: (.*)
+          target_label: instance
+          replacement: $1
+          action: replace
     # - job_name: kube-etcd
     #   kubernetes_sd_configs:
     #     - role: node
@@ -2078,6 +2136,18 @@ prometheus:
         - pgbouncer
     endpoints:
       - port: metrics
+        interval: 30s
+        path: /metrics
+        scheme: http
+  - name: kubecost
+    selector:
+      matchLabels:
+        app.kubernetes.io/instance: cost-analyzer
+    namespaceSelector:
+      matchNames:
+        - kubecost
+    endpoints:
+      - port: tcp-model
         interval: 30s
         path: /metrics
         scheme: http

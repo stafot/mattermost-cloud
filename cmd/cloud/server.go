@@ -82,6 +82,7 @@ func init() {
 	serverCmd.PersistentFlags().Bool("force-cr-upgrade", false, "If specified installation CRVersions will be updated to the latest version when supervised.")
 	serverCmd.PersistentFlags().String("mattermost-webhook", "", "Set to use a Mattermost webhook for spot instances termination notifications")
 	serverCmd.PersistentFlags().String("mattermost-channel", "", "Set a mattermost channel for spot instances termination notifications")
+	serverCmd.PersistentFlags().String("kubecost-token", "", "Set a kubecost token")
 }
 
 var serverCmd = &cobra.Command{
@@ -134,6 +135,11 @@ var serverCmd = &cobra.Command{
 		mattermostChannel, _ := command.Flags().GetString("mattermost-channel")
 		if mattermostChannel != "" {
 			os.Setenv(model.MattermostChannel, mattermostChannel)
+		}
+
+		kubecostToken, _ := command.Flags().GetString("kubecost-token")
+		if kubecostToken != "" {
+			os.Setenv(model.KubecostToken, kubecostToken)
 		}
 
 		logger := logger.WithField("instance", instanceID)

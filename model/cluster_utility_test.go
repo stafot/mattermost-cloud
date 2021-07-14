@@ -86,6 +86,8 @@ func TestGetActualVersion(t *testing.T) {
 				Fluentbit:          &HelmUtilityVersion{Chart: "1337"},
 				Teleport:           &HelmUtilityVersion{Chart: "12345"},
 				Pgbouncer:          &HelmUtilityVersion{Chart: "123456"},
+				Kubecost:          &HelmUtilityVersion{Chart: "123456"},
+
 			},
 			ActualVersions: UtilityGroupVersions{
 				PrometheusOperator: &HelmUtilityVersion{Chart: "kube-prometheus-stack-9.4"},
@@ -94,6 +96,8 @@ func TestGetActualVersion(t *testing.T) {
 				Fluentbit:          &HelmUtilityVersion{Chart: "fluent-bit-0.9"},
 				Teleport:           &HelmUtilityVersion{Chart: "teleport-0.3.0"},
 				Pgbouncer:          &HelmUtilityVersion{Chart: "pgbouncer-1.1.0"},
+				Kubecost:           &HelmUtilityVersion{Chart: "cost-analyzer-1.83.0"},
+
 			},
 		},
 	}
@@ -115,6 +119,9 @@ func TestGetActualVersion(t *testing.T) {
 
 	version = c.ActualUtilityVersion(PgbouncerCanonicalName)
 	assert.Equal(t, &HelmUtilityVersion{Chart: "pgbouncer-1.1.0"}, version)
+
+	version = c.ActualUtilityVersion(KubecostCanonicalName)
+	assert.Equal(t, &HelmUtilityVersion{Chart: "cost-analyzer-1.83.0"}, version)
 
 	version = c.ActualUtilityVersion("something else that doesn't exist")
 	assert.Equal(t, version, nilHuv)
