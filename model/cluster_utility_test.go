@@ -96,7 +96,7 @@ func TestGetActualVersion(t *testing.T) {
 				Fluentbit:          &HelmUtilityVersion{Chart: "fluent-bit-0.9"},
 				Teleport:           &HelmUtilityVersion{Chart: "teleport-0.3.0"},
 				Pgbouncer:          &HelmUtilityVersion{Chart: "pgbouncer-1.1.0"},
-				Kubecost:           &HelmUtilityVersion{Chart: "cost-analyzer-1.83.0"},
+				Kubecost:           &HelmUtilityVersion{Chart: "cost-analyzer-1.83.1"},
 
 			},
 		},
@@ -121,7 +121,7 @@ func TestGetActualVersion(t *testing.T) {
 	assert.Equal(t, &HelmUtilityVersion{Chart: "pgbouncer-1.1.0"}, version)
 
 	version = c.ActualUtilityVersion(KubecostCanonicalName)
-	assert.Equal(t, &HelmUtilityVersion{Chart: "cost-analyzer-1.83.0"}, version)
+	assert.Equal(t, &HelmUtilityVersion{Chart: "cost-analyzer-1.83.1"}, version)
 
 	version = c.ActualUtilityVersion("something else that doesn't exist")
 	assert.Equal(t, version, nilHuv)

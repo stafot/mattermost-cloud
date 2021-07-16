@@ -410,7 +410,7 @@ prometheus:
 ## Module for measuring network costs
 ## Ref: https://github.com/kubecost/docs/blob/master/network-allocation.md
 networkCosts:
-  enabled: false
+  enabled: true
   podSecurityPolicy:
     enabled: false
   image: gcr.io/kubecost1/kubecost-network-costs:v15.3
@@ -419,7 +419,7 @@ networkCosts:
   # This Service is annotated with prometheus.io/scrape: "true" to automatically get picked up by the prometheus config.
   # NOTE: Setting this option to true and leaving the above extraScrapeConfig "job_name: kubecost-networking" configured will cause the
   # NOTE: pods to be scraped twice.
-  prometheusScrape: false
+  prometheusScrape: true
   # Traffic Logging will enable logging the top 5 destinations for each source
   # every 30 minutes.
   trafficLogging: true

@@ -33,7 +33,7 @@ func TestNewCreateClusterRequestFromReader(t *testing.T) {
 				"thanos":              {Chart: "3.2.2", ValuesPath: "helm-charts/thanos_values.yaml"},
 				"teleport":            {Chart: "0.3.0", ValuesPath: "helm-charts/teleport_values.yaml"},
 				"pgbouncer":           {Chart: "1.1.0", ValuesPath: "helm-charts/pgbouncer_values.yaml"},
-				"kubecost":           {Chart: "1.83.0", ValuesPath: "helm-charts/kubecost_values.yaml"},
+				"kubecost":            {Chart: "1.83.1", ValuesPath: "helm-charts/kubecost_values.yaml"},
 			},
 		}
 	}
@@ -96,7 +96,7 @@ func TestNewCreateClusterRequestFromReader(t *testing.T) {
 				"thanos":              {Chart: "3.2.2", ValuesPath: "helm-charts/thanos_values.yaml"},
 				"teleport":            {Chart: "0.3.0", ValuesPath: "helm-charts/teleport_values.yaml"},
 				"pgbouncer":           {Chart: "1.1.0", ValuesPath: "helm-charts/pgbouncer_values.yaml"},
-				"kubecost":           {Chart: "1.83.0", ValuesPath: "helm-charts/kubecost_values.yaml"},
+				"kubecost":            {Chart: "1.83.1", ValuesPath: "helm-charts/kubecost_values.yaml"},
 			},
 		}, clusterRequest)
 	})

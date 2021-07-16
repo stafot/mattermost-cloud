@@ -51,7 +51,7 @@ var (
 	// PgbouncerDefaultVersion defines the default version for the Helm chart
 	PgbouncerDefaultVersion = &HelmUtilityVersion{Chart: "1.1.0", ValuesPath: "helm-charts/pgbouncer_values.yaml"}
 	// KubecostDefaultVersion defines the default version for the Helm chart
-	KubecostDefaultVersion = &HelmUtilityVersion{Chart: "1.83.0", ValuesPath: "helm-charts/kubecost_values.yaml"}
+	KubecostDefaultVersion = &HelmUtilityVersion{Chart: "1.83.1", ValuesPath: "helm-charts/kubecost_values.yaml"}
 )
 
 // UnmarshalJSON is a custom JSON unmarshaler that can handle both the
@@ -68,7 +68,7 @@ func (h *UtilityGroupVersions) UnmarshalJSON(bytes []byte) error {
 		Fluentbit          *HelmUtilityVersion
 		Teleport           *HelmUtilityVersion
 		Pgbouncer          *HelmUtilityVersion
-		Kubecost		   *HelmUtilityVersion
+		Kubecost           *HelmUtilityVersion
 	}
 	type oldUtilityGroupVersions struct {
 		PrometheusOperator string
@@ -78,7 +78,7 @@ func (h *UtilityGroupVersions) UnmarshalJSON(bytes []byte) error {
 		Fluentbit          string
 		Teleport           string
 		Pgbouncer          string
-		Kubecost		   string
+		Kubecost           string
 	}
 
 	var utilGrpVers *utilityGroupVersions = &utilityGroupVersions{}
@@ -122,7 +122,7 @@ type UtilityGroupVersions struct {
 	Fluentbit          *HelmUtilityVersion
 	Teleport           *HelmUtilityVersion
 	Pgbouncer          *HelmUtilityVersion
-	Kubecost	 	   *HelmUtilityVersion
+	Kubecost           *HelmUtilityVersion
 }
 
 // AsMap returns the UtilityGroupVersion represented as a map with the
@@ -137,7 +137,7 @@ func (h *UtilityGroupVersions) AsMap() map[string]*HelmUtilityVersion {
 		FluentbitCanonicalName:          h.Fluentbit,
 		TeleportCanonicalName:           h.Teleport,
 		PgbouncerCanonicalName:          h.Pgbouncer,
-		KubecostCanonicalName: 			 h.Kubecost,
+		KubecostCanonicalName:           h.Kubecost,
 	}
 }
 
